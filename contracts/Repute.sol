@@ -91,7 +91,7 @@ contract Repute {
         assert(idx < len);
         assert(len > 0);
         invitations[_from][idx] = invitations[_from][len-1];
-        delete invitations[_from][len-1];
+        invitations[_from].pop();
     }
 
     function acceptInvitation(address _from) public {
