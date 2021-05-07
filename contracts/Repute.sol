@@ -21,6 +21,11 @@ contract Repute {
         uint8 guest_rating;
     }
 
+    event InvitationSent(address indexed from, address indexed to);
+    event InvitationCancelled(address indexed from, address indexed to);
+    event InvitationAccepted(address indexed from, address indexed to);
+    event RatingUpdated(address indexed ratee);
+
     /// @dev Store user reputation (rating)
     mapping (address => Rating) private reputation;
 
@@ -82,6 +87,9 @@ contract Repute {
             guest_rep.count++;
 
             _removeInvitation(_from, _invitation.to);
+
+            emit RatingUpdated(_from);
+            emit RatingUpdated(_invitation.to);
         }
     }
 
@@ -99,16 +107,18 @@ contract Repute {
         require(idx_to == invitations[_to].length, "A reverse invitation already exists");
 
         invitations[msg.sender].push(Invitation(_to, false, 0, 0));
+        emit InvitationSent(msg.sender, _to);
     }
 
     /**
-     * @dev Remove sent invitation if it is not accepted yet
+     * @dev Cancel sent invitation if it is not accepted yet
      */
-    function removeInvitation(address _to) public {
+    function cancelInvitation(address _to) public {
         uint idx = _getInvitationIndex(msg.sender, _to);
         require(idx == invitations[msg.sender].length, "The invitation doesn't exists");
         require(!invitations[msg.sender][idx].accepted, "The invitation has already accepted");
         _removeInvitation(msg.sender, _to);
+        emit InvitationCancelled(msg.sender, _to);
     }
 
     /// @dev Remove invitation from the invitations mapping
@@ -129,6 +139,7 @@ contract Repute {
         require(idx != invitations[_from].length, "The invitation doesn't exist");
         require(!invitations[_from][idx].accepted, "The invitation has already accepted");
         invitations[_from][idx].accepted = true;
+        emit InvitationAccepted(_from, msg.sender);
     }
 
     /// @dev Helper function to get invitation index from invitation

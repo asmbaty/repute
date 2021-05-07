@@ -3,7 +3,7 @@
 - [x] If A has already invited B, B shouldn't be able to invite A
 - [x] Add modifiers
 - [x] Add more comments
-- [ ] Add events
+- [x] Add events
 
 ### Test
 - [ ] Create basic test for the smart contract
