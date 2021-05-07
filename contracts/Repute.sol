@@ -28,6 +28,7 @@ contract Repute {
         return user_rating.sum / user_rating.count;
     }
 
+    /// @dev Rate your peer
     function rate(address _ratee, uint8 rating) public {
         require(1 <= rating && rating <= 5, "Rating must be one of these values {1, 2, 3, 4, 5}");
         require(_ratee != address(0), "Ratee address is not valid");
@@ -37,7 +38,7 @@ contract Repute {
             _rate(msg.sender, invitations[msg.sender][idx_from], rating, true);
         } else {
             uint idx_to = _getInvitationIndex(_ratee, msg.sender);
-            assert(idx_to != invitations[_ratee].length);
+            require(idx_to != invitations[_ratee].length, "Could not find a meeting with the ratee");
             _rate(_ratee, invitations[_ratee][idx_to], rating, false);
         }
     }
@@ -70,6 +71,8 @@ contract Repute {
     }
 
     function sendInvitation(address _to) public {
+        require(_to != address(0), "Guest address is not valid");
+
         uint idx_from = _getInvitationIndex(msg.sender, _to);
         require(idx_from == invitations[msg.sender].length, "The invitation already exists");
 
@@ -99,10 +102,6 @@ contract Repute {
         require(idx != invitations[_from].length, "The invitation doesn't exist");
         require(!invitations[_from][idx].accepted, "The invitation has already accepted");
         invitations[_from][idx].accepted = true;
-    }
-
-    function hasAnInvitation(address _from, address _to) public view returns (bool) {
-        return _getInvitationIndex(_from, _to) != invitations[_from].length;
     }
 
     function _getInvitationIndex(address _from, address _to) private view returns (uint) {
