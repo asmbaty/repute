@@ -99,12 +99,13 @@ contract Repute {
     /**
      * @dev Send meeting invitation to a user
      * @param _to User address
+     * @notice Consider producing a match when reverse invitaiton exists
      */
     function sendInvitation(address _to) public {
         require(_to != address(0), "Guest address is not valid");
 
         uint idx_from = _getInvitationIndex(msg.sender, _to);
-        require(idx_from == invitations[msg.sender].length, "The invitation already exists");
+        require(idx_from == invitations[msg.sender].length, "Invitation already exists");
 
         uint idx_to = _getInvitationIndex(_to, msg.sender);
         require(idx_to == invitations[_to].length, "A reverse invitation already exists");
@@ -118,8 +119,8 @@ contract Repute {
      */
     function cancelInvitation(address _to) public {
         uint idx = _getInvitationIndex(msg.sender, _to);
-        require(idx == invitations[msg.sender].length, "The invitation doesn't exists");
-        require(!invitations[msg.sender][idx].accepted, "The invitation has already accepted");
+        require(idx != invitations[msg.sender].length, "Invitation doesn't exists");
+        require(!invitations[msg.sender][idx].accepted, "Invitation has already accepted");
         _removeInvitation(msg.sender, _to);
         emit InvitationCancelled(msg.sender, _to);
     }
@@ -139,8 +140,8 @@ contract Repute {
      */
     function acceptInvitation(address _from) public {
         uint idx = _getInvitationIndex(_from, msg.sender);
-        require(idx != invitations[_from].length, "The invitation doesn't exist");
-        require(!invitations[_from][idx].accepted, "The invitation has already accepted");
+        require(idx != invitations[_from].length, "Invitation doesn't exist");
+        require(!invitations[_from][idx].accepted, "Invitation has already accepted");
         invitations[_from][idx].accepted = true;
         emit InvitationAccepted(_from, msg.sender);
     }
