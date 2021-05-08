@@ -37,9 +37,12 @@ contract Repute {
      *         or returns 0 if the user has not given any ratings
      * @notice Everybody's rating is public
      */
-    function getRating(address _user) public view returns (uint) {
+    function getRating(address _user) public view returns (uint128) {
         Rating storage user_rating = reputation[_user];
-        return user_rating.sum / user_rating.count;
+        if( user_rating.count == 0) {
+            return 0;
+        }
+        return user_rating.sum * 100 / user_rating.count;
     }
 
     /**
@@ -80,8 +83,8 @@ contract Repute {
             Rating storage host_rep = reputation[_from];
             Rating storage guest_rep = reputation[_invitation.to];
 
-            host_rep.sum += uint128(100) * uint128(_invitation.guest_rating);
-            guest_rep.sum += uint128(100) * uint128(_invitation.host_rating);
+            host_rep.sum += uint128(_invitation.guest_rating);
+            guest_rep.sum += uint128(_invitation.host_rating);
 
             host_rep.count++;
             guest_rep.count++;
