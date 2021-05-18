@@ -19,6 +19,16 @@ contract('Repute', (accounts) => {
         expect(bob_rating.toNumber()).to.equal(0);
     });
 
+    it('Alice cannot invite Bob without registering', async () => {
+        try {
+            await repute.sendInvitation(bob);
+            expect.fail();
+        } catch(error) {
+            const ERROR_MEESAGE = 'User is not registered';
+            expect(error.message).to.include(ERROR_MEESAGE);
+        }
+    });
+
     it('Alice cannot rate Bob without a meeting', async () => {
         try {
             await repute.rate(bob, 1);
@@ -31,6 +41,8 @@ contract('Repute', (accounts) => {
 
     describe('Alice sends a meeting invitation to Bob', async () => {
         beforeEach('Alice sends an invitation', async () => {
+            await repute.register({from: alice});
+            await repute.register({from: bob});
             await repute.sendInvitation(bob);
         });
 
@@ -54,7 +66,18 @@ contract('Repute', (accounts) => {
             }
         });
 
-        it('Alice can send invitation to Carol as well', async () => {
+        it('Alice cannot send invitation to Carol if she is not registered', async () => {
+            try {
+                await repute.sendInvitation(carol);
+                expect.fail();
+            } catch(error) {
+                const ERROR_MEESAGE = 'Guest is not registered';
+                expect(error.message).to.include(ERROR_MEESAGE);
+            }
+        });
+
+        it('Alice can send invitation to Carol if she is registered', async () => {
+            await repute.register({from: carol});
             await repute.sendInvitation(carol);
         });
 

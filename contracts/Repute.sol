@@ -25,6 +25,10 @@ contract Repute {
     event InvitationCancelled(address indexed from, address indexed to);
     event InvitationAccepted(address indexed from, address indexed to);
     event RatingUpdated(address indexed ratee);
+    event NewUserRegistered(address indexed user);
+
+    /// @dev Mapping of registered users
+    mapping (address => bool) private users;
 
     /// @dev Store user reputation (rating)
     mapping (address => Rating) private reputation;
@@ -32,6 +36,13 @@ contract Repute {
     /// @dev Store invitations from users
     mapping (address => Invitation[]) private invitations;
     
+    /// @dev register a user. Only registered users can get meeting requests
+    function register() public {
+        require(!users[msg.sender], "User has already registered");
+        users[msg.sender] = true;
+        emit NewUserRegistered(msg.sender);
+    }
+
     /**
      * @return the rating of the user multiplied by 100 in the range [100, 500]
      *         or returns 0 if the user has not given any ratings
@@ -103,6 +114,8 @@ contract Repute {
      */
     function sendInvitation(address _to) public {
         require(_to != address(0), "Guest address is not valid");
+        require(users[msg.sender], "User is not registered");
+        require(users[_to], "Guest is not registered");
 
         uint idx_from = _getInvitationIndex(msg.sender, _to);
         require(idx_from == invitations[msg.sender].length, "Invitation already exists");
