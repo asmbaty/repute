@@ -46,6 +46,20 @@ contract('Repute', (accounts) => {
             await repute.sendInvitation(bob);
         });
 
+        it('Only Alice and Bob are registered', async () => {
+            const user_count = await repute.userCount()
+            assert.equal(user_count, 2)
+
+            let users = []
+            const user0 = await repute.users(0)            
+            users.push(user0)
+            const user1 = await repute.users(1)
+            users.push(user1)
+
+            let expected = [alice, bob]
+            assert.equal(users.join(','), expected.join(','))
+        })
+
         it('Alice cannot send invitation to Bob twice', async () => {
             try {
                 await repute.sendInvitation(bob);
