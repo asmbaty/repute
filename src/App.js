@@ -1,8 +1,9 @@
-import React, {Component} from 'react';
-import Web3 from 'web3';
-import './App.css';
-import Repute from './abis/Repute.json';
-import Header from './components/Header';
+import React, {Component} from 'react'
+import Web3 from 'web3'
+import './App.css'
+import Repute from './abis/Repute.json'
+import Header from './components/Header'
+import { withAlert } from 'react-alert'
 
 class App extends Component {
   
@@ -20,7 +21,7 @@ class App extends Component {
       window.web3 = new Web3(window.web3.currentProvider) // metamask
     }
     else {
-      window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+      this.props.alert.error('Non-Ethereum browser detected. You should consider trying MetaMask!')
     }
   }
 
@@ -34,6 +35,7 @@ class App extends Component {
     if(networkData) {
       const abi = Repute.abi
       const address = networkData.address
+      this.props.alert.info(`Loading repute contract at address ${address}`)
       var contract = new web3.eth.Contract(abi, address)
       this.setState({ contract })
 
@@ -48,7 +50,7 @@ class App extends Component {
         })
       }
     } else {
-      window.alert('Smart contract is not deployed to detected network.')
+      this.props.alert.error('Smart contract is not deployed to detected network.')
     }
   }
 
@@ -60,9 +62,12 @@ class App extends Component {
       userCount: 0,
       users: []
     }
+
   }
 
   render() {
+    const alert = this.props.alert;
+
     return (
       <>
         <Header title='REPUTE' address={this.state.account}/>
@@ -72,11 +77,10 @@ class App extends Component {
               event.preventDefault()
               this.state.contract.methods.register().send({from: this.state.account})
                 .once('receipt', (receipt) => {
-                  console.log('receipt')
-                  window.alert('succesfully registered')
+                  this.props.alert.success('succesfully registered')
                 })
                 .on('error', (error) => {
-                  window.alert('Error occurred')
+                  this.props.alert.error('Error occurred')
                 })
             }}>
               <input
@@ -103,4 +107,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default withAlert()(App);
