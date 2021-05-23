@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import Web3 from 'web3';
 import './App.css';
 import Repute from './abis/Repute.json';
+import Header from './components/Header';
 
 class App extends Component {
   
@@ -63,42 +64,41 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
-        Welcome to my React + Truffle applicatoin
-        <div>
+      <>
+        <Header title='REPUTE' address={this.state.account}/>
+        <div className="App">
+          <div>
+            <form onSubmit={ (event) => {
+              event.preventDefault()
+              this.state.contract.methods.register().send({from: this.state.account})
+                .once('receipt', (receipt) => {
+                  console.log('receipt')
+                  window.alert('succesfully registered')
+                })
+                .on('error', (error) => {
+                  window.alert('Error occurred')
+                })
+            }}>
+              <input
+                type='submit'
+                className='btn btn-block btn-primary'
+                value='Register'
+              />
+            </form>
+          </div>
           <p>
-            User account address <b>{this.state.account}</b>
+            User count: <b>{this.state.userCount}</b>
           </p>
-          <form onSubmit={ (event) => {
-            event.preventDefault()
-            this.state.contract.methods.register().send({from: this.state.account})
-              .once('receipt', (receipt) => {
-                console.log('receipt')
-                window.alert('succesfully registered')
-              })
-              .on('error', (error) => {
-                window.alert('Error occurred')
-              })
-          }}>
-            <input
-              type='submit'
-              className='btn btn-block btn-primary'
-              value='Register'
-            />
-          </form>
+          {this.state.users.map((user, key) => {
+            return (
+              <div key={key} className="col-md-3 mb-3">
+                User: {user}
+                <input type='submit' value='Invite'/>
+              </div>
+            )
+          })}
         </div>
-        <p>
-          User count: <b>{this.state.userCount}</b>
-        </p>
-        {this.state.users.map((user, key) => {
-          return (
-            <div key={key} className="col-md-3 mb-3">
-              User: {user}
-              <input type='submit' value='Invite'/>
-            </div>
-          )
-        })}
-      </div>
+      </>
     );
   }
 }
