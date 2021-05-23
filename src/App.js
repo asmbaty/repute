@@ -49,13 +49,31 @@ class App extends Component {
           users: [...this.state.users, user]
         })
       }
+
+      // Listen Events
+      this.listenEvents()
     } else {
       this.props.alert.error('Smart contract is not deployed to detected network.')
     }
   }
 
+  async listenEvents() {
+    // const results = await this.state.contract.getPastEvents(
+    //   'NewUserRegistered',
+    //   {fromBlock: 0}
+    // )
+    // console.log(`${results.length} events from block 0`)
+    // results.map(result => console.log(`user registered: ${result.returnValues[0]}`))
+
+    this.state.contract.events.NewUserRegistered({})
+      .on('data', event => {
+        this.props.alert.success(`New user with address ${event.returnValues[0]}`)
+      })
+  }
+
   constructor(props) {
     super(props)
+    this.handleRegister = this.handleRegister.bind(this);
     this.state = {
       account: '',
       contract: null,
@@ -66,23 +84,12 @@ class App extends Component {
   }
 
   render() {
-    const alert = this.props.alert;
-
     return (
       <>
         <Header title='REPUTE' address={this.state.account}/>
         <div className="App">
           <div>
-            <form onSubmit={ (event) => {
-              event.preventDefault()
-              this.state.contract.methods.register().send({from: this.state.account})
-                .once('receipt', (receipt) => {
-                  this.props.alert.success('succesfully registered')
-                })
-                .on('error', (error) => {
-                  this.props.alert.error('Error occurred')
-                })
-            }}>
+            <form onSubmit={this.handleRegister}>
               <input
                 type='submit'
                 className='btn btn-block btn-primary'
@@ -104,6 +111,18 @@ class App extends Component {
         </div>
       </>
     );
+  }
+
+  handleRegister(event) {
+      event.preventDefault()
+      this.state.contract.methods.register().send({from: this.state.account})
+        .once('receipt', (receipt) => {
+          this.props.alert.success('succesfully registered')
+          console.log('register', receipt.events);
+        })
+        .on('error', (error) => {
+          this.props.alert.error('Error occurred')
+        })
   }
 }
 
